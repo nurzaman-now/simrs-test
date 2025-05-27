@@ -17,9 +17,9 @@ class PasienResource extends JsonResource
         return [
             ...parent::toArray($request),
             'tanggal_lahir' => $this->resource->tanggal_lahir?->format('d F Y'),
-            'pemeriksaan' => $this->whenLoaded('pemeriksaan', function () {
-                return PemeriksaanResource::collection($this->resource->pemeriksaan);
-            }),
+            'pemeriksaan' => $this->resource->relationLoaded('pemeriksaan')
+                ? PemeriksaanResource::collection($this->resource->pemeriksaan)
+                : null,
         ];
     }
 }

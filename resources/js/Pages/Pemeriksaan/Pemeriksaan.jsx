@@ -10,8 +10,14 @@ import {InputNumber} from "primereact/inputnumber";
 import {InputMask} from "primereact/inputmask";
 import {InputTextarea} from "primereact/inputtextarea";
 import {Toast} from "primereact/toast";
+import {Calendar} from "primereact/calendar";
+import {addLocale} from "primereact/api";
 
 const Pemeriksaan = ({auth, pasien}) => {
+    const [date, setDate] = useState([
+        new Date(),
+        new Date(),
+    ])
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(10);
     const [expandedRows, setExpandedRows] = useState(null);
@@ -19,15 +25,17 @@ const Pemeriksaan = ({auth, pasien}) => {
 
     const rowsOptions = [10, 25, 50, 100];
 
-    const reloadData = (search, page, perPage) => {
+    const reloadData = (search, page, perPage, date) => {
+        const startDate = date[0] ? new Date(date[0]).toDateString() : new Date().toDateString();
+        const endDate = date[1] ? new Date(date[1]).toDateString() : new Date().toDateString();
         return router.get(
-            route("pemeriksaan.index"), {per_page: perPage, search, page},
+            route("pemeriksaan.index"), {per_page: perPage, search, page, start_date: startDate, end_date: endDate},
             {preserveState: true, preserveScroll: true},
         );
     }
 
     const paginatorRight = (
-        <Button icon="pi pi-refresh" onClick={() => reloadData("", page, perPage)}/>
+        <Button icon="pi pi-refresh" onClick={() => reloadData("", page, perPage, date)}/>
     );
 
     const data = pasien.data.map((item, index) => ({
@@ -152,10 +160,31 @@ const Pemeriksaan = ({auth, pasien}) => {
         }
     };
 
+    addLocale('id', {
+        firstDayOfWeek: 1,
+        dayNames: ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'],
+        dayNamesShort: ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'],
+        dayNamesMin: ['Mg', 'Sn', 'Sl', 'Rb', 'Km', 'Jm', 'Sb'],
+        monthNames: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'],
+        monthNamesShort: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'],
+        today: 'Hari Ini',
+        clear: 'Bersihkan',
+        weekHeader: 'Mg',
+        dateFormat: 'dd/mm/yy',
+        week: 'Minggu',
+    })
+
+    const filter = <Calendar selectionMode={"range"} locale="id" value={date} onChange={(e) => {
+                setDate(e.value);
+                if (e.value && e.value.length === 2) {
+                    reloadData("", page, perPage, e.value);
+                }
+            }}/>;
+
     return (
         <Layout user={auth.user}>
             <Toast ref={toast}/>
-            <DatatableLayout title="Data Pasien" onReload={reloadData}>
+            <DatatableLayout title="Data Pasien" onReload={reloadData} templateFilter={filter}>
                 <DataTable lazy value={data} emptyMessage="Data tidak ditemukan"
                            expandedRows={expandedRows} onRowToggle={(e) => setExpandedRows(e.data)}
                            rowExpansionTemplate={rowExpansionTemplate} dataKey="id"
@@ -166,7 +195,7 @@ const Pemeriksaan = ({auth, pasien}) => {
                            onPage={(e) => {
                                setPage(e.page + 1);
                                setPerPage(e.rows);
-                               reloadData("", e.page + 1, e.rows);
+                               reloadData("", e.page + 1, e.rows, date);
                            }}
                            currentPageReportTemplate="{first} to {last} of {totalRecords}"
                            paginatorLeft={<></>} paginatorRight={paginatorRight}>

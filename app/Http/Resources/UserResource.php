@@ -2,10 +2,11 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\EnumRoles;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class PemberianObatResource extends JsonResource
+class UserResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -16,10 +17,7 @@ class PemberianObatResource extends JsonResource
     {
         return [
             ...parent::toArray($request),
-            'tanggal_pemberian' => $this->resource->created_at?->format('d F Y'),
-            'obat' => $this->resource->relationLoaded('obat')
-                ? new ObatResource($this->resource->obat)
-                : null,
+            'role_label' => EnumRoles::getLabel()[$this->resource->role] ?? null,
         ];
     }
 }

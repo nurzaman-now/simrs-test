@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class PemberianObatResource extends JsonResource
+class ObatResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -16,10 +16,6 @@ class PemberianObatResource extends JsonResource
     {
         return [
             ...parent::toArray($request),
-            'tanggal_pemberian' => $this->resource->created_at?->format('d F Y'),
-            'obat' => $this->resource->relationLoaded('obat')
-                ? new ObatResource($this->resource->obat)
-                : null,
         ];
     }
 }

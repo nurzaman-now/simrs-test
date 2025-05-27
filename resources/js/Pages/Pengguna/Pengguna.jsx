@@ -7,33 +7,30 @@ import {Button} from "primereact/button";
 import {router, useForm} from "@inertiajs/react";
 import {Dialog} from "primereact/dialog";
 import {InputText} from "primereact/inputtext";
-import {Calendar} from "primereact/calendar";
 import {Dropdown} from "primereact/dropdown";
 import {Toast} from "primereact/toast";
 import {confirmDialog, ConfirmDialog} from "primereact/confirmdialog";
 import {Message} from "primereact/message";
+import {RoleEnum} from "@/Constants/RoleEnum.js";
 
-const Pasien = ({auth, pasien}) => {
+const Pengguna = ({auth, pengguna, role}) => {
     const toast = useRef(null);
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(10);
     const [dialogForm, setDialogForm] = useState(false);
-    const dataJenisKelamin = [
-        {label: "Laki-laki", value: "Laki-Laki"},
-        {label: "Perempuan", value: "Perempuan"},
-    ];
     const rowsOptions = [10, 25, 50, 100];
-    const {data, setData,errors, processing, post, put, reset} = useForm({
+    const {data, setData, errors, processing, post, put, reset} = useForm({
         id: null,
-        nama: '',
-        tanggal_lahir: '',
-        jenis_kelamin: '',
-        nomor_telepon: '',
+        nama: null,
+        email: null,
+        role: null,
+        password: null,
+        password_confirmation: null,
     });
 
     const reloadData = (search, page, perPage) => {
         return router.get(
-            route("pasien.index"), {per_page: perPage, search, page},
+            route("pengguna.index"), {per_page: perPage, search, page},
             {preserveState: true, preserveScroll: true},
         );
     }
@@ -42,9 +39,9 @@ const Pasien = ({auth, pasien}) => {
         <Button icon="pi pi-refresh" onClick={() => reloadData("", page, perPage)}/>
     );
 
-    const dataPasien = pasien.data.map((item, index) => ({
+    const dataPengguna = pengguna.data.map((item, index) => ({
         ...item,
-        no: pasien.meta.from + index,
+        no: pengguna.meta.from + index,
     }));
 
     const handleAdd = () => {
@@ -56,23 +53,22 @@ const Pasien = ({auth, pasien}) => {
         setData({
             id: e.id,
             nama: e.nama,
-            tanggal_lahir: new Date(e.tanggal_lahir),
-            jenis_kelamin: e.jenis_kelamin,
-            nomor_telepon: e.nomor_telepon,
+            email: e.email,
+            role: e.role,
         });
         setDialogForm(true);
     }
 
     const sendForm = () => {
         if (data.id) {
-            put(route("pasien.update", data.id), {
+            put(route("pengguna.update", data.id), {
                 onSuccess: () => {
                     setDialogForm(false);
                     reloadData("", page, perPage);
                     toast.current.show({
                         severity: 'success',
                         summary: 'Berhasil',
-                        detail: 'Data pasien berhasil diperbarui.',
+                        detail: 'Data pengguna berhasil diperbarui.',
                         life: 3000,
                     });
                 },
@@ -81,20 +77,20 @@ const Pasien = ({auth, pasien}) => {
                     toast.current.show({
                         severity: 'error',
                         summary: 'Gagal',
-                        detail: 'Gagal memperbarui data pasien.',
+                        detail: 'Gagal memperbarui data pengguna.',
                         life: 3000,
                     });
                 },
             });
         } else {
-            post(route("pasien.store"), {
+            post(route("pengguna.store"), {
                 onSuccess: () => {
                     setDialogForm(false);
                     reloadData("", page, perPage);
                     toast.current.show({
                         severity: 'success',
                         summary: 'Berhasil',
-                        detail: 'Data pasien berhasil disimpan.',
+                        detail: 'Data pengguna berhasil disimpan.',
                         life: 3000,
                     });
                 },
@@ -102,7 +98,7 @@ const Pasien = ({auth, pasien}) => {
                     toast.current.show({
                         severity: 'error',
                         summary: 'Gagal',
-                        detail: 'Gagal menyimpan data pasien.',
+                        detail: 'Gagal menyimpan data pengguna.',
                         life: 3000,
                     });
                 },
@@ -112,7 +108,7 @@ const Pasien = ({auth, pasien}) => {
 
     const confirmDelete = (e) => {
         confirmDialog({
-            message: 'Apakah Anda yakin ingin menghapus data pasien ini?',
+            message: 'Apakah Anda yakin ingin menghapus data pengguna ini?',
             header: 'Konfirmasi',
             icon: 'pi pi-exclamation-triangle',
             defaultFocus: 'reject',
@@ -123,13 +119,13 @@ const Pasien = ({auth, pasien}) => {
     }
 
     const handleDelete = (e) => {
-        router.delete(route("pasien.destroy", e.id), {
+        router.delete(route("pengguna.destroy", e.id), {
             onSuccess: () => {
                 reloadData("", page, perPage);
                 toast.current.show({
                     severity: 'success',
                     summary: 'Berhasil',
-                    detail: 'Data pasien berhasil dihapus.',
+                    detail: 'Data pengguna berhasil dihapus.',
                     life: 3000,
                 });
             },
@@ -137,7 +133,7 @@ const Pasien = ({auth, pasien}) => {
                 toast.current.show({
                     severity: 'error',
                     summary: 'Gagal',
-                    detail: 'Gagal menghapus data pasien.',
+                    detail: 'Gagal menghapus data pengguna.',
                     life: 3000,
                 });
             },
@@ -146,22 +142,24 @@ const Pasien = ({auth, pasien}) => {
 
     const headerElement = (
         <div className="inline-flex align-items-center justify-content-center gap-2">
-            <span className="font-bold white-space-nowrap">Form Pasien</span>
+            <span className="font-bold white-space-nowrap">Form Pengguna</span>
         </div>
     );
 
     const footerContent = (
-        <Button label={data.id ? "Ubah" : "Simpan"} severity={data.id ? "warning" : "success"} className="mt-2" loading={processing} onClick={sendForm}/>
+        <Button label={data.id ? "Ubah" : "Simpan"} severity={data.id ? "warning" : "success"} className="mt-2"
+                loading={processing} onClick={sendForm}/>
     );
 
+    console.log(data);
     return (
         <Layout user={auth.user}>
             <Toast ref={toast}/>
             <ConfirmDialog/>
-            <DatatableLayout title="Data Pasien" onReload={reloadData} onAdd={handleAdd}>
-                <DataTable lazy value={dataPasien} emptyMessage="Data tidak ditemukan"
-                           paginator first={pasien.meta.from} rows={pasien.meta.per_page}
-                           totalRecords={pasien.meta.total}
+            <DatatableLayout title="Data Pengguna" onReload={reloadData} onAdd={handleAdd}>
+                <DataTable lazy value={dataPengguna} emptyMessage="Data tidak ditemukan"
+                           paginator first={pengguna.meta.from} rows={pengguna.meta.per_page}
+                           totalRecords={pengguna.meta.total}
                            paginatorTemplate="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
                            rowsPerPageOptions={rowsOptions}
                            onPage={(e) => {
@@ -173,10 +171,10 @@ const Pasien = ({auth, pasien}) => {
                            paginatorLeft={<></>} paginatorRight={paginatorRight}>
                     <Column field="no" header="No" style={{width: '50px'}}/>
                     <Column field="nama" header="Nama"/>
-                    <Column field="tanggal_lahir" header="Tanggal Lahir"/>
-                    <Column field="jenis_kelamin" header="Jenis Kelamin"/>
-                    <Column field="nomor_telepon" header="No. Telepon"/>
+                    <Column field="email" header="Email"/>
+                    <Column field="role_label" header="Role"/>
                     <Column header="Aksi" body={(e) => {
+                        if (e.role === RoleEnum.SuperAdmin) return null; // Prevent actions for admin users
                         return (
                             <>
                                 <Button icon="pi pi-pencil" severity="warning" rounded
@@ -202,35 +200,44 @@ const Pasien = ({auth, pasien}) => {
                     )}
                 </div>
                 <div className="flex flex-column gap-2 mt-2">
-                    <label htmlFor="tanggal_lahir">Tanggal Lahir</label>
-                    <Calendar id="tanggal_lahir" value={data.tanggal_lahir}
-                              onChange={(e) => setData('tanggal_lahir', e.target.value)} required/>
-                    {errors.tanggal_lahir && (
-                        <Message severity="error" text={errors.tanggal_lahir} className="mt-2"/>
+                    <label htmlFor="email">Email</label>
+                    <InputText id="email" value={data.email} onChange={(e) => setData('email', e.target.value)}
+                               required/>
+                    {errors.email && (
+                        <Message severity="error" text={errors.email} className="mt-2"/>
                     )}
                 </div>
                 <div className="flex flex-column gap-2 mt-2">
-                    <label htmlFor="jenis_kelamin">Jenis Kelamin</label>
-                    <Dropdown value={data.jenis_kelamin}
-                              options={dataJenisKelamin} placeholder="Pilih jenis kelamin"
-                              className="w-full" inputId="jenis_kelamin" optionLabel="label"
-                              onChange={(e) => setData("jenis_kelamin", e.value)}
-                    />
-                    {errors.jenis_kelamin && (
-                        <Message severity="error" text={errors.jenis_kelamin} className="mt-2"/>
+                    <label htmlFor="role">Role</label>
+                    <Dropdown id="role" value={data.role} options={role} onChange={(e) => setData('role', e.value)}
+                              optionLabel="label" placeholder="Pilih Role" required/>
+                    {errors.role && (
+                        <Message severity="error" text={errors.role} className="mt-2"/>
                     )}
                 </div>
-                <div className="flex flex-column gap-2 mt-2">
-                    <label htmlFor="nomor_telepon">No. Telepon</label>
-                    <InputText id="nomor_telepon" value={data.nomor_telepon}
-                               onChange={(e) => setData('nomor_telepon', e.target.value)} required/>
-                    {errors.nomor_telepon && (
-                        <Message severity="error" text={errors.nomor_telepon} className="mt-2"/>
-                    )}
-                </div>
+                {!data.id && (
+                    <>
+                        <div className="flex flex-column gap-2 mt-2">
+                            <label htmlFor="password">Password</label>
+                            <InputText id="password" type="password" value={data.password}
+                                       onChange={(e) => setData('password', e.target.value)} required/>
+                            {errors.password && (
+                                <Message severity="error" text={errors.password} className="mt-2"/>
+                            )}
+                        </div>
+                        <div className="flex flex-column gap-2 mt-2">
+                            <label htmlFor="password_confirmation">Konfirmasi Password</label>
+                            <InputText id="password_confirmation" type="password" value={data.password_confirmation}
+                                       onChange={(e) => setData('password_confirmation', e.target.value)} required/>
+                            {errors.password_confirmation && (
+                                <Message severity="error" text={errors.password_confirmation} className="mt-2"/>
+                            )}
+                        </div>
+                    </>
+                )}
             </Dialog>
         </Layout>
     );
 }
 
-export default Pasien;
+export default Pengguna;

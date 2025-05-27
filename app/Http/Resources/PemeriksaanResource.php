@@ -17,9 +17,9 @@ class PemeriksaanResource extends JsonResource
         return [
             ...parent::toArray($request),
             'tanggal_kunjungan' => $this->created_at?->format('d F Y'),
-            'pemberian_obat' => $this->whenLoaded('pemberianObat', function () {
-                return PemberianObatResource::collection($this->resource->pemberianObat);
-            }),
+            'pemberian_obat' => $this->resource->relationLoaded('pemberianObat')
+                ? PemberianObatResource::collection($this->resource->pemberianObat)
+                : null,
         ];
     }
 }

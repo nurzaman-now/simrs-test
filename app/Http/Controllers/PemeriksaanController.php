@@ -20,10 +20,22 @@ class PemeriksaanController extends Controller
     public function index(Request $request): Response
     {
         $search = $request->get('search');
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+        $startDate = $startDate ? date('Y-m-d', strtotime($startDate)) : null;
+        $endDate = $endDate ? date('Y-m-d', strtotime($endDate)) : null;
 
         $pasien = Pasien::query()
             ->where('nama', 'like', '%' . $search . '%')
             ->whereHas('pemeriksaan')
+            ->when($startDate, function ($query) use ($startDate, $endDate) {
+                $query->whereHas('pemeriksaan', function ($q) use ($startDate, $endDate) {
+                    $q->whereDate('created_at', '>=', $startDate)
+                        ->when($endDate, function ($q2) use ($endDate) {
+                            $q2->whereDate('created_at', '<=', $endDate);
+                        });
+                });
+            })
             ->with('pemeriksaan')
             ->orderBy('nama')
             ->paginate(10)

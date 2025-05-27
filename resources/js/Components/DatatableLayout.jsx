@@ -3,12 +3,18 @@ import React, {useState} from "react";
 import {InputText} from "primereact/inputtext";
 import {Button} from "primereact/button";
 
-export default function DatatableLayout({title, onReload, onAdd = null, children}) {
+export default function DatatableLayout({title, onReload, onAdd = null, templateFilter = null, children}) {
     const [search, setSearch] = useState("");
 
+    console.log(templateFilter)
     return (
         <Card title={title} className="p-mt-3">
             <div className="flex justify-content-between">
+                {templateFilter && (
+                    <div className="flex gap-2">
+                        {templateFilter}
+                    </div>
+                )}
                 <div className="flex gap-2">
                     <InputText
                         value={search}

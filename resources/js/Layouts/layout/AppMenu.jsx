@@ -8,7 +8,9 @@ const AppMenu = ({user}) => {
     switch (user.role) {
         case RoleEnum.SuperAdmin:
             items = [
+                {label: 'Pengguna', icon: 'pi pi-fw pi-users', to: route('pengguna.index')},
                 {label: 'Pasien', icon: 'pi pi-fw pi-users', to: route('pasien.index')},
+                {label: 'Obat', icon: 'pi pi-fw pi-plus-circle', to: route('obat.index')},
             ];
             break;
         case RoleEnum.Pendaftaran:
