@@ -31,6 +31,7 @@ php artisan key:generate
 
 # Setup database di .env
 php artisan migrate --seed
+php artisan storage:link
 ```
 
 # 🚀 Menjalankan Aplikasi
@@ -40,3 +41,9 @@ npm install
 npm run dev
 php artisan serve
 ```
+
+# 📚 Dokumentasi
+Untuk dokumentasi lengkap, silakan kunjungi [Laravel](https://laravel.com/docs/10.x), [Inertia.js](https://inertiajs.com/), [React](https://reactjs.org/docs/getting-started.html), [PrimeReact](https://primefaces.org/primereact/showcase/#/), dan [Tailwind CSS](https://tailwindcss.com/docs).
+
+# Akun
+Silahkan cek file `database/seeders/UserSeeder.php` untuk melihat akun yang sudah dibuat.
