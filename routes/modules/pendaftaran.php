@@ -1,11 +1,11 @@
 <?php
 
-use App\Http\Controllers\MenuController;
-use App\Http\Controllers\PemeriksaanController;
+use App\Enums\EnumRoles;
 use App\Http\Controllers\PendaftaranController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('pendaftaran')->name('pendaftaran.')
+Route::middleware('role:'. EnumRoles::SuperAdmin->value . ',' . EnumRoles::Pendaftaran->value)
+    ->prefix('pendaftaran')->name('pendaftaran.')
     ->controller(PendaftaranController::class)->group(function () {
         Route::get('/', 'index')->name('index');
         Route::post('/', 'store')->name('store');
